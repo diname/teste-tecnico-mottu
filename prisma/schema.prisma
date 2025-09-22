@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id          String     @id @default(uuid())
+  name        String
+  document    String     @unique
+  email       String     @unique
+  balance     Float      @default(0.0)
+  creditLimit Float      @default(1000.0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  movements   Movement[]
+}
+
+model Movement {
+  id          String       @id @default(uuid())
+  accountId   String
+  account     Account      @relation(fields: [accountId], references: [id])
+  amount      Float
+  type        MovementType
+  description String
+  createdAt   DateTime     @default(now())
+  ledgerLogs  LedgerLog[]
+}
+
+model LedgerLog {
+  id         String   @id @default(uuid())
+  movementId String
+  movement   Movement @relation(fields: [movementId], references: [id])
+  logDate    DateTime @default(now())
+  logData    Json
+}
+
+enum MovementType {
+  CREDIT
+  DEBIT
+}
